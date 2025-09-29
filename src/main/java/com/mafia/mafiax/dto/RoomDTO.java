@@ -3,6 +3,7 @@ package com.mafia.mafiax.dto;
 import com.mafia.mafiax.entity.RoomStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record RoomDTO(
         Long id,
@@ -11,5 +12,5 @@ public record RoomDTO(
         RoomStatus status,
         int maxPlayers,
         LocalDateTime createdAt,
-        List<PlayerDto> players
+        List<PlayerDTO> players
 ) {}
