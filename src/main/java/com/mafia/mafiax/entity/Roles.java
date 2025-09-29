@@ -4,8 +4,8 @@ public enum Roles {
 
     MAFIA,
     DOCTOR,
-    CIVILIANS,
+    CIVIL,
     DETECTIVE,
-    NEUTRAL
+
 
 }

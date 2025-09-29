@@ -1,7 +1,6 @@
 package com.mafia.mafiax.dto;
 
 import com.mafia.mafiax.entity.RoomStatus;
-
 import java.time.LocalDateTime;
 import java.util.List;
 

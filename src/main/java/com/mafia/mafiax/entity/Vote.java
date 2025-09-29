@@ -1,35 +1,37 @@
 package com.mafia.mafiax.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "votes")
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Vote {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "player_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_id", nullable = false)
     private Player voter;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "target_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_id", nullable = false)
     private Player target;
 
-    @Column(name = "round_number")
+    @Column(name = "round_number", nullable = false)
     private int roundNumber;
 
-    @Column(name = "created_at")
-    private LocalDateTime voteDate = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime voteDate;
 
-
+    @PrePersist
+    protected void onCreate() {
+        this.voteDate = LocalDateTime.now();
+    }
 }

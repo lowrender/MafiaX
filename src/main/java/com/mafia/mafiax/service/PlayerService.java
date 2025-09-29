@@ -1,8 +1,6 @@
 package com.mafia.mafiax.service;
 
-
 import com.mafia.mafiax.dto.PlayerDTO;
-import com.mafia.mafiax.dto.RoomDTO;
 import com.mafia.mafiax.entity.Player;
 import com.mafia.mafiax.entity.Room;
 import com.mafia.mafiax.entity.Users;
@@ -12,6 +10,7 @@ import com.mafia.mafiax.mapper.PlayerMapper;
 import com.mafia.mafiax.repository.PlayerRepository;
 import com.mafia.mafiax.repository.RoomRepository;
 import com.mafia.mafiax.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PlayerService {
 
     private final RoomRepository roomRepository;
@@ -27,34 +27,21 @@ public class PlayerService {
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
 
-
-    public PlayerService(RoomRepository roomRepository, UserRepository userRepository, PlayerRepository playerRepository, PlayerMapper playerMapper) {
-        this.roomRepository = roomRepository;
-        this.userRepository = userRepository;
-        this.playerRepository = playerRepository;
-        this.playerMapper = playerMapper;
-    }
-
-
     public PlayerDTO joinRoom(Long userId, Long roomId, int seatIndex) {
-
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-
         Room room = roomRepository.findById(roomId)
-                .orElseThrow( () -> new RoomNotFoundException("Room not found"));
+                .orElseThrow(() -> new RoomNotFoundException("Room not found"));
 
-        Player player = new Player();
-        player.setUser(user);
-        player.setRoom(room);
-        player.setSeatIndex(seatIndex);
-        player.setAlive(true);
-        player.setConnected(true);
+        Player player = Player.builder()
+                .user(user)
+                .room(room)
+                .seatIndex(seatIndex)
+                .isAlive(true)
+                .isConnected(true)
+                .build();
 
-        Player savedPlayer = playerRepository.save(player);
-        return playerMapper.toDTO(savedPlayer);
-
-
+        return playerMapper.toDTO(playerRepository.save(player));
     }
 
     public List<PlayerDTO> getAllPlayersInRoom(Long roomId) {
@@ -65,7 +52,5 @@ public class PlayerService {
                 .stream()
                 .map(playerMapper::toDTO)
                 .collect(Collectors.toList());
-
-
     }
 }

@@ -1,15 +1,18 @@
 package com.mafia.mafiax.mapper;
 
-
 import com.mafia.mafiax.dto.VoteDTO;
 import com.mafia.mafiax.entity.Vote;
 import org.mapstruct.Mapper;
-
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface VoteMapper {
 
-    VoteDTO toVoteDTO(Vote vote);
+    @Mapping(source = "voter.id", target = "playerId")
+    @Mapping(source = "target.id", target = "targetId")
+    VoteDTO toDTO(Vote vote);
 
-    Vote toVote(VoteDTO voteDTO);
+    @Mapping(source = "playerId", target = "voter.id")
+    @Mapping(source = "targetId", target = "target.id")
+    Vote toEntity(VoteDTO voteDTO);
 }

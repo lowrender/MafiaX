@@ -4,6 +4,7 @@ import com.mafia.mafiax.dto.RoomDTO;
 import com.mafia.mafiax.entity.Room;
 import com.mafia.mafiax.entity.RoomStatus;
 import com.mafia.mafiax.entity.Users;
+import com.mafia.mafiax.exceptions.RoomNotFoundException;
 import com.mafia.mafiax.exceptions.UserNotFoundException;
 import com.mafia.mafiax.mapper.RoomMapper;
 import com.mafia.mafiax.repository.RoomRepository;
@@ -24,39 +25,30 @@ public class RoomService {
     private final UserRepository userRepository;
     private final RoomMapper roomMapper;
 
-
-
     public RoomDTO createRoom(String code, Long hostId, int maxPlayers) {
         Users host = userRepository.findById(hostId)
                 .orElseThrow(() -> new UserNotFoundException("User with id " + hostId + " not found"));
 
-        Room room = new Room();
-        room.setCode(code);
-        room.setMaxPlayers(maxPlayers);
-        room.setHost(host);
-        room.setStatus(RoomStatus.LOBBY);
+        Room room = Room.builder()
+                .code(code)
+                .host(host)
+                .maxPlayers(maxPlayers)
+                .status(RoomStatus.WAITING)
+                .build();
 
-        Room savedRoom = roomRepository.save(room);
-        return roomMapper.toDTO(savedRoom);
-
-
+        return roomMapper.toDTO(roomRepository.save(room));
     }
 
-    public RoomDTO getRoomByCode(String code) {
-        Room room = roomRepository.findByCode(code)
-                .orElseThrow(() -> new UserNotFoundException("Room with code " + code + " not found"));
-
+    public RoomDTO getRoomById(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RoomNotFoundException("Room with id " + roomId + " not found"));
         return roomMapper.toDTO(room);
     }
 
     public List<RoomDTO> getAllRooms() {
-        List<Room> rooms = roomRepository.findAll();
-
-      return   rooms.stream()
+        return roomRepository.findAll()
+                .stream()
                 .map(roomMapper::toDTO)
                 .collect(Collectors.toList());
-
-
     }
-
 }

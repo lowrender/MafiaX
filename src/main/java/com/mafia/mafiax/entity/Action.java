@@ -1,37 +1,41 @@
 package com.mafia.mafiax.entity;
 
-
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "actions")
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Action {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @ManyToOne()
-    @JoinColumn(name = "player_id")
+    @ManyToOne
+    @JoinColumn(name = "player_id", nullable = false)
     private Player player;
 
-    @Column(name = "action_type")
-    private String action;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "action_type", nullable = false)
+    private ActionType actionType;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "target_id")
     private Player target;
 
-    @Column(name = "round_number")
+    @Column(name = "round_number", nullable = false)
     private int roundNumber;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

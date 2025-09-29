@@ -1,7 +1,7 @@
 package com.mafia.mafiax.entity;
 
 public enum RoomStatus {
-    LOBBY,
+    WAITING,
     IN_PROGRESS,
     FINISHED,
 }
