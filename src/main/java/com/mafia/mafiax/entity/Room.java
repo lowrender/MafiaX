@@ -4,14 +4,17 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
 @Table(name = "rooms")
-@Data
+@Getter // Используем явные аннотации вместо @Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = "players") // Исключаем список игроков
 public class Room {
 
     @Id
@@ -21,9 +24,10 @@ public class Room {
     @Column(name = "code", nullable = false, unique = true)
     private String code;
 
+    // Изменение типа: Users -> User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_id", nullable = false)
-    private Users host;
+    private User host;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -37,6 +41,20 @@ public class Room {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players = new ArrayList<>();
+
+    // Защищенный геттер для предотвращения внешних модификаций списка
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(players);
+    }
+
+    public void addPlayer(Player player) {
+        if (player.getRoom() != this) {
+            player.setRoom(this);
+        }
+        if (!this.players.contains(player)) {
+            this.players.add(player);
+        }
+    }
 
     @PrePersist
     protected void onCreate() {

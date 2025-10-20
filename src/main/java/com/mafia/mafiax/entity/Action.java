@@ -16,7 +16,8 @@ public class Action {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    // Добавлено fetch = FetchType.LAZY
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "player_id", nullable = false)
     private Player player;
 
@@ -24,7 +25,8 @@ public class Action {
     @Column(name = "action_type", nullable = false)
     private ActionType actionType;
 
-    @ManyToOne
+    // Добавлено fetch = FetchType.LAZY
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_id")
     private Player target;
 

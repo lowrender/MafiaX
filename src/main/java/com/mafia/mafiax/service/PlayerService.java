@@ -3,7 +3,10 @@ package com.mafia.mafiax.service;
 import com.mafia.mafiax.dto.PlayerDTO;
 import com.mafia.mafiax.entity.Player;
 import com.mafia.mafiax.entity.Room;
-import com.mafia.mafiax.entity.Users;
+import com.mafia.mafiax.entity.RoomStatus;
+import com.mafia.mafiax.entity.Roles;
+import com.mafia.mafiax.entity.User;
+import com.mafia.mafiax.exceptions.RoomIsFullException;
 import com.mafia.mafiax.exceptions.RoomNotFoundException;
 import com.mafia.mafiax.exceptions.UserNotFoundException;
 import com.mafia.mafiax.mapper.PlayerMapper;
@@ -28,10 +31,26 @@ public class PlayerService {
     private final PlayerMapper playerMapper;
 
     public PlayerDTO joinRoom(Long userId, Long roomId, int seatIndex) {
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с ID : " + userId + " не найден"));
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RoomNotFoundException("Room not found"));
+                .orElseThrow(() -> new RoomNotFoundException("Комната с ID : " + roomId + " не найдена"));
+
+
+        if (room.getStatus() != RoomStatus.WAITING) {
+            throw new IllegalStateException("Игра уже началась ");
+        }
+
+
+        long playerCount = playerRepository.countByRoomId(roomId);
+        if (playerCount >= room.getMaxPlayers()) {
+            throw new RoomIsFullException("Комната уже заполнена");
+        }
+
+
+        if (playerRepository.findByUserIdAndRoomId(userId, roomId).isPresent()) {
+            throw new IllegalStateException("Пользователь уже в лобби");
+        }
 
         Player player = Player.builder()
                 .user(user)
@@ -39,16 +58,21 @@ public class PlayerService {
                 .seatIndex(seatIndex)
                 .isAlive(true)
                 .isConnected(true)
+                .role(Roles.CIVIL) // ну тут роль пока по умолчанию
                 .build();
+
+
 
         return playerMapper.toDTO(playerRepository.save(player));
     }
 
+    @Transactional(readOnly = true)
     public List<PlayerDTO> getAllPlayersInRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RoomNotFoundException("Room not found"));
+                .orElseThrow(() -> new RoomNotFoundException("Комнаты с ID : " + roomId + " не найдено или ее не существует"));
 
-        return playerRepository.findByRoom(room)
+
+        return playerRepository.findByRoomWithUser(room)
                 .stream()
                 .map(playerMapper::toDTO)
                 .collect(Collectors.toList());
